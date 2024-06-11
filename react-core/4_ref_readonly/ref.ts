@@ -93,6 +93,8 @@ Ref 类型的变量会被打上 __v_isRef 标记。
 其实阅读 vue 源码可以知道, vue 的实现其实并不是这样的。标记都被打到了实际的代理身上：
 reactive 对象自身也有标记 __v_isReactive. isReactive() 使用它。
 readonly 对象自身也有标记 __v_isReadonly. isReadonly() 使用它。
+无法被代理的对象会被标记 __v_skip. 通过 markRaw(obj) 得到；
+任何对象代理的 __v_raw 即为源对象自己。
 
 同样的，这里再次强调，不要把响应式变量和指向变量 Ref 混淆。
 toRef 虽然返回的是 Ref 类型，但它并不是响应式变量。
@@ -111,22 +113,8 @@ function unref(obj) {
     return isRef(obj) ? obj.value : obj;
 }
 
-// unref 的增强版本。。（无语了
+// unref 的增强版本。。
 // 判断一下是不是 getter 函数, 是 getter 就返回其值; 不是就返回 unref。。
 export function toValue<T>(source): T {
     return (typeof source === 'function') ? source() : unref(source)
-}
-
-/*
-首先需要明确，"只读"和"响应式"是两个冲突的概念。
-一个变量是只读的, 那么就意味着它的值不会再发生改变, 也就意味着他不会再触发任何响应式的 trigger 了。
-反过来，一个变量时响应式的，就意味着它会在值改变的时候 trigger.
-
-最直观的实现思路是，给传入的套一层只读代理(只实现 get())。
-但是，这会导致的一个问题：只读是只读了，但也只是一层只读代理。转发到原 proxy 的每次 get(), 还是会触发 track.
-本质上，"只读"和"响应式"本就是两个冲突的概念。我们先为原始对象添加一层响应式代理，再在这上面增加只读代理，实际上是一种冲突的感觉。
-vue 的解决办法，是在创建响应式代理的 new Proxy(target, handler) 的 baseHandler 上添加一个标记。在 baseHandler 对象上，有两个属性，第一个是 _readonly，另一个是 _shallow。在构造 handler 的时候，可以传入这个 _readonly，表示只读而非响应式。这样，
-*/
-function readonly(val) {
-
 }

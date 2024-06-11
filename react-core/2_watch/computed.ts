@@ -2,15 +2,20 @@ import { effect } from "./effect";
 import { track, trigger } from "./interceptor";
 
 /*
- * computed 和 interceptor 得到的虽然都是专属变量，但实现不同。
- * 一个 interceptor 在 set 的时候触发 trigger。
- * 而 computed 则是在 getter 函数被重新执行的时候触发 trigger。
+ * computed 和 reactive(也就是 interceptor) 得到的虽然都是专属变量，但实现不同。
+ * 一个 reactive 在 set 的时候触发 trigger。
+ * 而 computed 则是使用 effect scheduler, 在副作用函数 getter 被重新执行的时候触发 trigger。
  * 
- * computed 特殊的把 getter 看做一个副作用，这样在该副作用重新执行时，就意味着 getter 内部的用到的专属变量发生了变化，就把 dirty 置为 true。
- * 这里可以发现其实触发 dirty 变为 true 的条件, 并不是副作用的返回值和旧的值不一样。而仅仅是副作用 getter 被触发了。
- * 在 vue3.4 里，为了解决这个问题，加入了判断，只有和旧的值不同才会把 dirty 变为 true。
- * 
+ * computed 特殊的把 getter 看做一个副作用，这样在该副作用重新执行时，就意味着 getter 内部用到的专属变量发生了变化，就把 dirty 置为 true。
+ * 这里可以发现其实触发 trigger 的条件, 并不是副作用的返回值和旧的值不一样。而仅仅是副作用 getter 被触发了。
+ * 这种不合理的行为，在 vue 3.4 版本中才被解决：
  * https://cn.vuejs.org/guide/best-practices/performance.html#computed-stability
+ * 
+ * 这部分十分的绕，有几个关键词需要分得清楚： 副作用 getter, 与之相关联的、可触发 trigger 的 scheduler。
+ *  
+ * computed 优化行为过程如下：
+ * 1. 使用 dirty 变量, 在变量只有在副作用 getter 的 scheduler 被触发的的时候置为 true, 并判断新旧值是否相同。
+ * 2. 在新旧值不同的前提下，trigger 会被触发。
  */
 
 // 接收一个函数 fn
