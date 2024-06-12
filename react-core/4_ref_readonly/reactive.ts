@@ -59,6 +59,8 @@ function createReactive(obj, isShallow = false) {
         }
     })
 
+    Reflect.defineProperty(p, '__v_isReactive', { value: true });
+
     return p
 }
 

@@ -78,7 +78,7 @@ function toRef(target, key) {
 toRefs 是一个语法糖，用于构造一个对象，这个对象的每一个属性都是原对象的相应的属性的访问器属性代理。
 这在展开 reactive 对象而不想丢失响应式代理的时候有用。
 */
-export function toRefs(object) {
+function toRefs(object) {
     const ret = {}
     for (const key in object) {
         ret[key] = toRef(object, key)
@@ -115,6 +115,9 @@ function unref(obj) {
 
 // unref 的增强版本。。
 // 判断一下是不是 getter 函数, 是 getter 就返回其值; 不是就返回 unref。。
-export function toValue<T>(source): T {
+function toValue<T>(source): T {
     return (typeof source === 'function') ? source() : unref(source)
 }
+
+
+export { ref, shallowRef, toRef, toRefs, isRef, unref, toValue }

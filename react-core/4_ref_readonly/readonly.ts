@@ -12,9 +12,36 @@ vue 就是这样实现的。
 在 vue 的 reactive proxy baseHandler 对象上，有两个属性，第一个是 _readonly，另一个是 _shallow。他们一个代表只读、另一个表示深浅响应式。
 */
 function readonly(obj) {
-    if (obj.__v_isReadonly) return obj;
+    if (isPrimitive(obj) || obj.__v_isReadonly) return obj
 
-    return
+    // 什么都不需要做: 仅仅实现一个 get 操作即可
+    const proxy = new Proxy(obj, {
+        get(target, key, receiver) {
+            const res = Reflect.get(target, key, receiver);
+            return readonly(res); // 只读是深层的. 即使访问到内部的值, 返回仍然是它的只读代理
+        },
+        set() {
+            return false
+        }
+    })
+
+    Reflect.defineProperty(obj, '__v_isReadonly', {
+        value: true
+    });
+
+    return proxy
+}
+
+function isPrimitive(value) {
+    return (
+        value === null ||
+        typeof value === 'boolean' ||
+        typeof value === 'number' ||
+        typeof value === 'string' ||
+        typeof value === 'symbol' ||
+        typeof value === 'bigint' ||
+        typeof value === 'undefined'
+    );
 }
 
 
