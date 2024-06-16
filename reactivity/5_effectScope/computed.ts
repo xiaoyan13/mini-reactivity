@@ -1,5 +1,5 @@
 import { effect } from "./effect";
-import { track, trigger } from "./interceptor";
+import { track, trigger } from "./reactive";
 
 /*
  * computed 和 reactive(也就是 interceptor) 得到的虽然都是专属变量，但实现不同。
@@ -16,6 +16,8 @@ import { track, trigger } from "./interceptor";
  * computed 优化行为过程如下：
  * 1. 使用 dirty 变量, 在变量只有在副作用 getter 的 scheduler 被触发的的时候置为 true, 并判断新旧值是否相同。
  * 2. 在新旧值不同的前提下，trigger 会被触发。
+ * 
+ * 这个过程是 3.4+ 的 computed.
  */
 
 // 接收一个函数 fn
@@ -28,7 +30,7 @@ function computed(fn) {
         lazy: true,
         scheduler(effectFn) { // effectFn 虽然会被传进来但是不会被执行~
             dirty = true; // 每次触发副作用都把 dirty 变为 true
-            trigger(tmpObj, 'value'); // 并 trigger 依赖 tmpObj 的 effect
+            trigger(tmpObj, 'value', 'SET'); // 并 trigger 依赖 tmpObj 的 effect
         },
     });
 
@@ -40,7 +42,7 @@ function computed(fn) {
         },
         get value() {
             if (dirty) {
-                cacheVal = effectFn() // 执行副作用, 重新 track 内部响应式变量与该 effect 的映射
+                cacheVal = effectFn() // 执行副作用, 重新 track 内部响应式变量与该 effect 的映射。第一次起到建立注册副作用的作用
                 dirty = false
             }
             track(tmpObj, 'value'); // track, 重新建立与自己当前 activeEffect 的映射

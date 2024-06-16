@@ -45,7 +45,7 @@ function computed(fn) {
                 cacheVal = effectFn() // 执行副作用, 重新 track 内部响应式变量与该 effect 的映射
                 dirty = false
             }
-            track(tmpObj, 'value'); // 重新 track 自己与其他 effect 的映射
+            track(tmpObj, 'value'); // track, 重新建立与自己当前 activeEffect 的映射
             return cacheVal
         }
     }
