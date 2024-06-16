@@ -1,9 +1,7 @@
-# mini-vue-reactivity
+# mini-reactivity
 
-手写一个 vue 的响应式核心。
+手写一个 mini 版的 [@vue/reactivity](https://github.com/vuejs/core/tree/main/packages/reactivity)。
 
-- 参考书籍: vue 设计与实现(2023 版)
+- 本实现完成了 `vue3.4` 版本常见的响应式 api。一些具体实现细节与原实现存在偏差，只提供了最基础的重现。
 
-- 实现主要参照了 vue v3.4 、v3.3 的 core 库和书中部分 code
-
-- 一些具体实现细节与原实现存在偏差。
+- 实现主要参照源码版本是 [v3.4](https://github.com/vuejs/core/tree/v3.4.29/packages/reactivity/src) 、[v3.3](https://github.com/vuejs/core/tree/v3.3.13/packages/reactivity/src)，参考书籍 《vue 设计与实现》(2023)。
